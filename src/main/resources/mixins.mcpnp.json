@@ -1,8 +1,9 @@
 {
   "required": true,
-  "package": "",
+  "package": "io.github.theglitch76.mcpnp.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "MixinIntegratedServer"
   ],
   "client": [
   ],

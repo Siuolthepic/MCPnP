@@ -2,14 +2,14 @@ plugins {
     id 'fabric-loom' version '0.2.4-SNAPSHOT'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.8.4'
-    id 'net.minecrell.licenser' version '0.4.1'
+    //id 'com.github.johnrengelman.shadow' version '5.1.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 if (isNullOrEmpty(System.getenv("TRAVIS_TAG")) && !isNullOrEmpty(System.getenv('TRAVIS_BUILD_NUMBER'))) {
-    version = project.modVersion + '.' + System.getenv('TRAVIS_BUILD_NUMBER')
+    version = project.modVersion + '+build.' + System.getenv('TRAVIS_BUILD_NUMBER')
 } else {
     version = project.modVersion
 }
@@ -19,40 +19,33 @@ group = project.mavenGroup
 minecraft {
 }
 
+configurations {
+    fatCompile.extendsFrom compile
+}
+repositories {
+    //God only knows who hosts this maven and how reliable it is.
+    maven {
+        url 'https://src.me1312.net/maven/'
+    }
+}
 dependencies {
     //to change the versions see the gradle.properties file
     minecraft "com.mojang:minecraft:${project.minecraftVersion}"
     mappings "net.fabricmc:yarn:${project.yarnMappings}"
     modCompile "net.fabricmc:fabric-loader:${project.loaderVersion}"
+    modCompile "io.github.prospector.modmenu:ModMenu:${project.modMenuVersion}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    // modCompile "net.fabricmc.fabric-api:fabric-api:${project.apiVersion}"
-
+    modCompile "net.fabricmc.fabric-api:fabric-api:${project.apiVersion}"
+    modCompile "com.dosse.upnp:WaifUPnP:1.1" // the version is likely to never change
+    include "com.dosse.upnp:WaifUPnP:1.1"
+    
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
 }
 
-sourceSets {
-    code {
-        compileClasspath += sourceSets.main.compileClasspath
-        compileClasspath += configurations.minecraftNamed
-        runtimeClasspath += sourceSets.main.runtimeClasspath
-        compileClasspath += configurations.minecraftNamed
-    }
-    data {
-        compileClasspath += sourceSets.code.compileClasspath
-        compileClasspath += sourceSets.code.output
-        runtimeClasspath += sourceSets.code.compileClasspath
-        runtimeClasspath += sourceSets.code.output
-    }
-}
 
-license {
-    header = file('HEADER.txt')
-    include '**/*.java'
-    style.java = 'BLOCK_COMMENT'
-    newLine = false
-}
+
 
 // ensure that the encoding is set to UTF-8, no matter what the system default is
 // this fixes some edge cases with special characters not displaying correctly
@@ -75,37 +68,12 @@ tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
-def dataDir = project.file(".gradle/datadump/")
-def dataCacheDir = new File(dataDir, "/.cache/")
-
-task deleteOldData(type: Delete) {
-    delete dataDir
-}
-
-task generateData(type: JavaExec) {
-    dependsOn deleteOldData
-
-    doFirst {
-        dataDir.mkdirs()
-    }
-
-    classpath = sourceSets.data.runtimeClasspath
-
-    main = project.dataEntry
-
-    // arguments to pass to the application
-
-    workingDir dataDir
-    args dataDir.getAbsolutePath()
+jar {
+    from "LICENSE"
 }
 
 processResources {
-    dependsOn generateData
-
-    from(dataDir) {
-        include "/data/"
-    }
-    from sourceSets.code.resources.srcDirs
+    from sourceSets.main.resources
 
     inputs.properties "version": project.version, "description": project.description
 
@@ -124,23 +92,22 @@ processResources {
 // If you remove this task, sources will not be generated.
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"
-    from sourceSets.code.allSource
+    from sourceSets.main.allSource
 }
 
 task javadocs(type: Javadoc) {
-    source = sourceSets.code.allJava
+    source = sourceSets.main.allJava
 }
 
 task javadocsJar(type: Jar, dependsOn: javadocs) {
     classifier = "javadocs"
     from javadocs.destinationDir
 }
+//shadowJar {
+//    configurations = [project.configurations.fatCompile]
+//}
 
-jar {
-    dependsOn generateData
-    from sourceSets.code.output
-    from "LICENSE"
-}
+
 
 artifacts {
     archives jar

@@ -1,1 +1,1 @@
-# Minecraft Plug-N-Play
+# Minecraft Plug-n-Play

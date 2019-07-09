@@ -1,34 +1,35 @@
 {
   "schemaVersion": 1,
-  "id": "doublecart",
+  "id": "mcpnp",
   "version": "${version}",
-
-  "name": "double cart",
+  "name": "Minecraft Plug-N-Play",
   "description": "${description}",
   "authors": [
-    "liach"
+    "theglitch76"
   ],
   "contact": {
-    "homepage": "https://github.com/liachmodded/doublecart",
-    "sources": "https://github.com/liachmodded/doublecart"
+    "homepage": "https://github.com/theglitch76/mcpnp",
+    "sources": "https://github.com/theglitch76/mcpnp"
   },
-
-  "license": "MPL-2.0",
-  "icon": "assets/doublecart/icon.png",
-
-  "environment": "*",
+  "license": "MIT",
+  "icon": "assets/mcpnp/icon.png",
+  "environment": "client",
   "entrypoints": {
     "main": [
-      "com.github.liachmodded.doublecart.DoubleCartEntry"
+      "io.github.theglitch76.mcpnp.MCPNP"
     ]
   },
   "mixins": [
-    "doublecart.mixins.json"
+    "mixins.mcpnp.json"
   ],
 
   "requires": {
     "fabricloader": ">=0.4.0"
   },
   "suggests": {
+  },
+  "custom": {
+    "modmenu:api": false,
+    "modmenu:clientsideOnly": true
   }
 }
