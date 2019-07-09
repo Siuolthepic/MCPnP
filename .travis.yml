@@ -18,7 +18,7 @@ jobs:
     install: chmod +x ./gradlew
     script: "./gradlew build -S -i"
   - stage: deploy
-    install: true
+    install: chmod +x ./gradlew
     script: "./gradlew javadocs build bintrayUpload -S -i"
     deploy:
       - provider: pages
