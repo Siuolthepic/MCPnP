@@ -1,0 +1,6 @@
+{
+  "mcpnp.upnp.failed.unavailable": "UPnP is not available on your router! No ports were forwarded.",
+  "mcpnp.upnp.failed.mapped": "The port was already in use! No ports were forwarded.",
+  "mcpnp.upnp.failed": "Unable to forward port!",
+  "mcpnp.upnp.success": "Sucessfully forwarded port!\nKeep in mind that you MUST properly exit the world when you're done for the port to be closed."
+}

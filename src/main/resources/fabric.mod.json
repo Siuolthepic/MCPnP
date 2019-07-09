@@ -16,7 +16,7 @@
   "environment": "client",
   "entrypoints": {
     "main": [
-      "io.github.theglitch76.mcpnp.MCPNP"
+      "io.github.theglitch76.mcpnp.MCPnP"
     ]
   },
   "mixins": [
