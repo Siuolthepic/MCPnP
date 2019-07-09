@@ -40,7 +40,7 @@ jobs:
 stages:
 - build
 - name: deploy
-  if: repo = mcpnp AND env(bintray_key) AND env(GITHUB_OAUTH_TOKEN)
+  if: repo = glitchieproductions/mcpnp AND env(bintray_key) AND env(GITHUB_OAUTH_TOKEN)
 env:
   global:
   - TERM=dumb
