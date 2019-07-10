@@ -3,7 +3,8 @@
   "package": "io.github.theglitch76.mcpnp.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "MixinIntegratedServer"
+    "MixinIntegratedServer",
+    "MixinOpenToLanScreen"
   ],
   "client": [
   ],

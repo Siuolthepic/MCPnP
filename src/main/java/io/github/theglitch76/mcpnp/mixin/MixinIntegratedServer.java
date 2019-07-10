@@ -2,6 +2,7 @@ package io.github.theglitch76.mcpnp.mixin;
 
 import com.dosse.upnp.UPnP;
 import io.github.theglitch76.mcpnp.MCPnP;
+import io.github.theglitch76.mcpnp.UPnPUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.TranslatableText;
@@ -26,21 +27,27 @@ public abstract class MixinIntegratedServer {
 
     @Inject(at = @At("HEAD"), method = "openToLan")
     public void beforeOpenToLan(GameMode gameMode, boolean cheats, int port, CallbackInfoReturnable<Boolean> cir) {
-        if (!UPnP.isUPnPAvailable()) {
-            client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.failed.unavailable"));
-            return;
-        }
-        if (UPnP.isMappedTCP(port)) {
-            client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.failed.mapped"));
-            return;
-        }
-        MCPnP.LOGGER.info("Opening port " + port + " via UPnP");
-        if (!UPnP.openPortTCP(port)) {
-            client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.failed"));
-        }
-        client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.success"));
+        //Open it in parallel, on the main thread it causes Windows to report
+        client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.started", port));
 
-
+        Thread thread = new Thread(() -> {
+            UPnPUtil.UPnPResult result = UPnPUtil.init(port);
+            switch(result) {
+                case SUCCESS:
+                    client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.success", port));
+                    break;
+                case FAILED_GENERIC:
+                    client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.failed"));
+                    break;
+                case FAILED_MAPPED:
+                    client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.failed.mapped", port));
+                    break;
+                case FAILED_DISABLED:
+                    client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.failed.disabled"));
+                    break;
+            }
+        });
+        thread.start();
     }
 
     @Inject(at = @At("HEAD"), method = "stop")
