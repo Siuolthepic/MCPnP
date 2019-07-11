@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 
 public class MCPnP implements ModInitializer {
-    public static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger("MCPnP");
 
     @Override
     public void onInitialize() {

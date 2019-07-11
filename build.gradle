@@ -35,7 +35,7 @@ dependencies {
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modCompile "net.fabricmc.fabric-api:fabric-api:${project.apiVersion}"
-    
+
     compile "com.dosse.upnp:WaifUPnP:1.1" // the version is likely to never change
     include "com.dosse.upnp:WaifUPnP:1.1"
     

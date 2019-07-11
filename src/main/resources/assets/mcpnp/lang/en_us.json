@@ -2,6 +2,7 @@
   "mcpnp.upnp.started": "Opening port %s using UPnP...",
   "mcpnp.upnp.failed.disabled": "UPnP is not enabled on your router! No ports were forwarded.",
   "mcpnp.upnp.failed.mapped": "Port %s was already mapped by another UPnP service! No ports were forwarded.",
-  "mcpnp.upnp.failed": "Unable to forward port! Is it already forwarded on your router?",
-  "mcpnp.upnp.success": "Successfully forwarded port %s!"
+  "mcpnp.upnp.failed": "Unable to forward port %s! Is it already forwarded on your router?",
+  "mcpnp.upnp.success": "Successfully forwarded port %s!",
+  "mcpnp.upnp.success.clipboard": "Copied your IP (%s:%s) to the clipboard."
 }
