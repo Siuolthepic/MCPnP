@@ -52,7 +52,7 @@ public abstract class MixinIntegratedServer extends MinecraftServer implements W
 
 
     @Inject(at = @At("HEAD"), method = "openToLan")
-    public void beforeOpenToLan(GameMode gameMode, boolean cheats, int port, CallbackInfoReturnable<Boolean> cir) {
+    public void openUpnpPort(GameMode gameMode, boolean cheats, int port, CallbackInfoReturnable<Boolean> cir) {
         //Open it in parallel, on the main thread it causes Windows to report
         client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.started", port));
         Thread thread = new Thread(() -> {
@@ -85,14 +85,14 @@ public abstract class MixinIntegratedServer extends MinecraftServer implements W
     }
     //Hack to get access to the local var
     @ModifyVariable(method = "loadWorld", at = @At("RETURN"))
-    private WorldSaveHandler modifyWorldSaveHandler(WorldSaveHandler worldSaveHandler_1) {
+    private WorldSaveHandler mcpnp_getWorldSaveHandler(WorldSaveHandler worldSaveHandler_1) {
         this.worldDir = worldSaveHandler_1.getWorldDir();
         return worldSaveHandler_1;
     }
 
 
     @Inject(at = @At("HEAD"), method = "stop")
-    public void beforeStop(boolean boolean_1, CallbackInfo ci) {
+    public void closeUpnpPort(boolean boolean_1, CallbackInfo ci) {
         if(lanPort == -1) return;
         MCPnP.LOGGER.info("Closing UPnP port " + lanPort);
         if (!UPnP.closePortTCP(lanPort)) {

@@ -16,6 +16,7 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.level.LevelInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -32,12 +33,15 @@ public class MixinOpenToLanScreen extends Screen {
 
     @Shadow
     private boolean allowCommands;
+    @Unique
     private PortWidget portWidget;
-
+    @Unique
     private Properties mcpnpProperties;
+    @Unique
     private File mcpnpPropertiesFile;
+    @Unique
     private LevelInfo levelInfo;
-
+    @Unique
     private int port = -1;
 
     @Shadow
@@ -48,7 +52,7 @@ public class MixinOpenToLanScreen extends Screen {
     }
 
     @Inject(at = @At("RETURN"), method = "<init>")
-    private void afterConstruction(Screen screen_1, CallbackInfo ci) {
+    private void createMcpnpProperties(Screen screen_1, CallbackInfo ci) {
         File worldDir = ((WorldDirGetter) MinecraftClient.getInstance().getServer()).getWorldDir();
         mcpnpPropertiesFile = new File(worldDir.getPath() + "/mcpnp.properties");
         this.mcpnpProperties = new Properties();
@@ -90,7 +94,7 @@ public class MixinOpenToLanScreen extends Screen {
     }
 
     @Inject(at = @At("RETURN"), method = "init")
-    public void afterInit(CallbackInfo ci) {
+    public void addPortSelection(CallbackInfo ci) {
         portWidget = this.addButton(new PortWidget(this.font, this.width / 2 - 155, 125, 150, 20, port, I18n.translate("mcpnp.port")));
         this.buttons.remove(0);
         this.children.remove(0);

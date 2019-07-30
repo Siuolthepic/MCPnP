@@ -11,12 +11,15 @@ targetCompatibility = JavaVersion.VERSION_1_8
 if (isNullOrEmpty(System.getenv("TRAVIS_TAG")) && !isNullOrEmpty(System.getenv('TRAVIS_BUILD_NUMBER'))) {
     version = project.modVersion + '+build.' + System.getenv('TRAVIS_BUILD_NUMBER')
 } else {
-    version = project.modVersion
+    version = project.modVersion + "+${project.minecraftVersion}"
 }
 logger.lifecycle("${project.archivesBaseName} version ${project.version}")
 group = project.mavenGroup
 
 minecraft {
+}
+configurations {
+    shadowed
 }
 
 repositories {
@@ -37,7 +40,7 @@ dependencies {
     modCompile "net.fabricmc.fabric-api:fabric-api:${project.apiVersion}"
 
     compile "com.dosse.upnp:WaifUPnP:1.1" // the version is likely to never change
-    include "com.dosse.upnp:WaifUPnP:1.1"
+    shadowed "com.dosse.upnp:WaifUPnP:1.1"
     
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
