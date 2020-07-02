@@ -1,19 +1,13 @@
 package io.github.theglitch76.mcpnp.mixin;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 import io.github.theglitch76.mcpnp.MCPnP;
-import io.github.theglitch76.mcpnp.api.LevelInfoGetter;
-import io.github.theglitch76.mcpnp.api.WorldDirGetter;
 import io.github.theglitch76.mcpnp.gui.widget.PortWidget;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.OpenToLanScreen;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.NetworkUtils;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.level.LevelInfo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,11 +15,16 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.OpenToLanScreen;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.NetworkUtils;
+import net.minecraft.server.PlayerManager;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.WorldSavePath;
+import net.minecraft.world.GameMode;
 
 @Mixin(OpenToLanScreen.class)
 public class MixinOpenToLanScreen extends Screen {
@@ -39,8 +38,7 @@ public class MixinOpenToLanScreen extends Screen {
     private Properties mcpnpProperties;
     @Unique
     private File mcpnpPropertiesFile;
-    @Unique
-    private LevelInfo levelInfo;
+
     @Unique
     private int port = -1;
 
@@ -52,18 +50,22 @@ public class MixinOpenToLanScreen extends Screen {
     }
 
     @Inject(at = @At("RETURN"), method = "<init>")
-    private void createMcpnpProperties(Screen screen_1, CallbackInfo ci) {
-        File worldDir = ((WorldDirGetter) MinecraftClient.getInstance().getServer()).getWorldDir();
+    private void createMcpnpProperties(Screen screen, CallbackInfo ci) {
+    	// TODO use Paths
+	    // this.client hasn't been initialized yet
+	    MinecraftClient client = MinecraftClient.getInstance();
+        File worldDir = client.getServer().getSavePath(WorldSavePath.ROOT).normalize().toFile();
+
         mcpnpPropertiesFile = new File(worldDir.getPath() + "/mcpnp.properties");
         this.mcpnpProperties = new Properties();
-        this.levelInfo = ((LevelInfoGetter) MinecraftClient.getInstance().getServer()).getLevelInfo();
+        PlayerManager manager = client.getServer().getPlayerManager();
 
         try {
             if (!mcpnpPropertiesFile.exists()) {
                 mcpnpPropertiesFile.createNewFile();
                 mcpnpProperties.setProperty("port", Integer.toString(NetworkUtils.findLocalPort()));
-                mcpnpProperties.setProperty("enable_cheats", Boolean.toString(levelInfo.allowCommands()));
-                mcpnpProperties.setProperty("gamemode", levelInfo.getGameMode().getName());
+                mcpnpProperties.setProperty("enable_cheats", Boolean.toString(manager.areCheatsAllowed()));
+                mcpnpProperties.setProperty("gamemode", client.getServer().getSaveProperties().getGameMode().getName());
             } else {
                 mcpnpProperties.load(new FileInputStream(mcpnpPropertiesFile));
             }
@@ -90,15 +92,15 @@ public class MixinOpenToLanScreen extends Screen {
             mcpnpProperties.setProperty("port", Integer.toString(NetworkUtils.findLocalPort()));
             this.port = Integer.parseInt(mcpnpProperties.getProperty("port"));
         }
-
     }
 
     @Inject(at = @At("RETURN"), method = "init")
     public void addPortSelection(CallbackInfo ci) {
-        portWidget = this.addButton(new PortWidget(this.font, this.width / 2 - 155, 125, 150, 20, port, I18n.translate("mcpnp.port")));
+        portWidget = this.addButton(new PortWidget(this.textRenderer, this.width / 2 - 155, 125, 150, 20, port, new TranslatableText("mcpnp.port")));
+
         this.buttons.remove(0);
         this.children.remove(0);
-        this.addButton(new ButtonWidget(this.width / 2 - 155, this.height - 28, 150, 20, I18n.translate("lanServer.start"), (buttonWidget_1) -> {
+        this.addButton(new ButtonWidget(this.width / 2 - 155, this.height - 28, 150, 20, new TranslatableText("lanServer.start"), (buttonWidget_1) -> {
 
             int port = Integer.parseInt(portWidget.getText());
             if(port < 1024 /*system reserve*/ || port > 65536) {
@@ -115,15 +117,15 @@ public class MixinOpenToLanScreen extends Screen {
                 mcpnpProperties.setProperty("enable_cheats", Boolean.toString(this.allowCommands));
             }
             //Close the screen
-            this.minecraft.openScreen(null);
+            this.client.openScreen(null);
             //Output text
             TranslatableText text_2;
-            if (this.minecraft.getServer().openToLan(GameMode.byName(this.gameMode), this.allowCommands, port)) {
+            if (this.client.getServer().openToLan(GameMode.byName(this.gameMode), this.allowCommands, port)) {
                 text_2 = new TranslatableText("commands.publish.started", port);
             } else {
                 text_2 = new TranslatableText("commands.publish.failed");
             }
-            this.minecraft.inGameHud.getChatHud().addMessage(text_2);
+            this.client.inGameHud.getChatHud().addMessage(text_2);
             try {
                 this.mcpnpProperties.store(new FileOutputStream(mcpnpPropertiesFile), "LAN world settings");
             } catch (IOException ex) {

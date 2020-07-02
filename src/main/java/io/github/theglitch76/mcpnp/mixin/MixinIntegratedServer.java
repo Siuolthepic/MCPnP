@@ -3,28 +3,30 @@ package io.github.theglitch76.mcpnp.mixin;
 import com.dosse.upnp.UPnP;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.datafixers.DataFixer;
 import io.github.theglitch76.mcpnp.MCPnP;
 import io.github.theglitch76.mcpnp.UPnPUtil;
-import io.github.theglitch76.mcpnp.api.LevelInfoGetter;
-import io.github.theglitch76.mcpnp.api.WorldDirGetter;
+
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.resource.ResourcePackManager;
+import net.minecraft.resource.ResourcePackProfile;
+import net.minecraft.resource.ServerResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.WorldGenerationProgressListenerFactory;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.UserCache;
+import net.minecraft.util.registry.RegistryTracker;
 import net.minecraft.world.GameMode;
-import net.minecraft.world.WorldSaveHandler;
+import net.minecraft.world.SaveProperties;
 import net.minecraft.world.level.LevelInfo;
+import net.minecraft.world.level.storage.LevelStorage;
+
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -32,7 +34,7 @@ import java.io.File;
 import java.net.Proxy;
 
 @Mixin(IntegratedServer.class)
-public abstract class MixinIntegratedServer extends MinecraftServer implements WorldDirGetter, LevelInfoGetter {
+public abstract class MixinIntegratedServer extends MinecraftServer {
 
     @Final
     @Shadow
@@ -41,17 +43,15 @@ public abstract class MixinIntegratedServer extends MinecraftServer implements W
     @Shadow
     private int lanPort;
 
-    @Shadow @Final private LevelInfo levelInfo;
+	@Shadow public abstract File getRunDirectory();
 
-    private File worldDir;
+	private File worldDir;
 
-    public MixinIntegratedServer(File file_1, Proxy proxy_1, DataFixer dataFixer_1, CommandManager commandManager_1, YggdrasilAuthenticationService yggdrasilAuthenticationService_1, MinecraftSessionService minecraftSessionService_1, GameProfileRepository gameProfileRepository_1, UserCache userCache_1, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory_1, String string_1) {
-        super(file_1, proxy_1, dataFixer_1, commandManager_1, yggdrasilAuthenticationService_1, minecraftSessionService_1, gameProfileRepository_1, userCache_1, worldGenerationProgressListenerFactory_1, string_1);
-    }
+	public MixinIntegratedServer(Thread thread, RegistryTracker.Modifiable modifiable, LevelStorage.Session session, SaveProperties saveProperties, ResourcePackManager<ResourcePackProfile> resourcePackManager, Proxy proxy, DataFixer dataFixer, ServerResourceManager serverResourceManager, MinecraftSessionService minecraftSessionService, GameProfileRepository gameProfileRepository, UserCache userCache, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory) {
+		super(thread, modifiable, session, saveProperties, resourcePackManager, proxy, dataFixer, serverResourceManager, minecraftSessionService, gameProfileRepository, userCache, worldGenerationProgressListenerFactory);
+	}
 
-
-
-    @Inject(at = @At("HEAD"), method = "openToLan")
+	@Inject(at = @At("HEAD"), method = "openToLan")
     public void openUpnpPort(GameMode gameMode, boolean cheats, int port, CallbackInfoReturnable<Boolean> cir) {
         //Open it in parallel, on the main thread it causes Windows to report
         client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.started", port));
@@ -62,7 +62,7 @@ public abstract class MixinIntegratedServer extends MinecraftServer implements W
                 if (port != -1) UPnP.closePortTCP(lanPort);
             }));
             UPnPUtil.UPnPResult result = UPnPUtil.init(port);
-            switch(result) {
+            switch (result) {
                 case SUCCESS:
                     client.inGameHud.getChatHud().addMessage(new TranslatableText("mcpnp.upnp.success", port));
                     client.keyboard.setClipboard(UPnP.getExternalIP() + ":" + port);
@@ -83,13 +83,6 @@ public abstract class MixinIntegratedServer extends MinecraftServer implements W
         });
         thread.start();
     }
-    //Hack to get access to the local var
-    @ModifyVariable(method = "loadWorld", at = @At("RETURN"))
-    private WorldSaveHandler mcpnp_getWorldSaveHandler(WorldSaveHandler worldSaveHandler_1) {
-        this.worldDir = worldSaveHandler_1.getWorldDir();
-        return worldSaveHandler_1;
-    }
-
 
     @Inject(at = @At("HEAD"), method = "stop")
     public void closeUpnpPort(boolean boolean_1, CallbackInfo ci) {
@@ -98,15 +91,5 @@ public abstract class MixinIntegratedServer extends MinecraftServer implements W
         if (!UPnP.closePortTCP(lanPort)) {
             MCPnP.LOGGER.warn("Failed to close port " + lanPort + "! Was it opened in the first place?");
         }
-    }
-
-    @Override
-    public File getWorldDir() {
-        return worldDir;
-    }
-
-    @Override
-    public LevelInfo getLevelInfo() {
-        return levelInfo;
     }
 }

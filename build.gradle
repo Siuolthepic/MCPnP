@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.2.4-SNAPSHOT'
+    id 'fabric-loom' version '0.4-SNAPSHOT'
     id 'maven-publish'
     id 'com.jfrog.bintray' version '1.8.4'
     //id 'com.github.johnrengelman.shadow' version '5.1.0'
@@ -27,6 +27,9 @@ repositories {
     maven {
         url 'https://src.me1312.net/maven/'
     }
+	maven {
+		url 'httpsL//fabricmc.net'
+	}
 }
 dependencies {
     //to change the versions see the gradle.properties file
@@ -34,7 +37,7 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarnMappings}"
     modCompile "net.fabricmc:fabric-loader:${project.loaderVersion}"
     
-    modCompile "io.github.prospector.modmenu:ModMenu:${project.modMenuVersion}"
+    modCompile "io.github.prospector:modmenu:${project.modMenuVersion}"
 
     // Fabric API. This is technically optional, but you probably want it anyway.
     modCompile "net.fabricmc.fabric-api:fabric-api:${project.apiVersion}"
