@@ -19,6 +19,7 @@ import net.minecraft.util.UserCache;
 import net.minecraft.util.registry.RegistryTracker;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.SaveProperties;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.level.LevelInfo;
 import net.minecraft.world.level.storage.LevelStorage;
 
