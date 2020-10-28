@@ -16,7 +16,6 @@ import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.UserCache;
-import net.minecraft.util.registry.RegistryTracker;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.SaveProperties;
 import net.minecraft.world.biome.Biome;
@@ -48,7 +47,7 @@ public abstract class MixinIntegratedServer extends MinecraftServer {
 
 	private File worldDir;
 
-	public MixinIntegratedServer(Thread thread, RegistryTracker.Modifiable modifiable, LevelStorage.Session session, SaveProperties saveProperties, ResourcePackManager<ResourcePackProfile> resourcePackManager, Proxy proxy, DataFixer dataFixer, ServerResourceManager serverResourceManager, MinecraftSessionService minecraftSessionService, GameProfileRepository gameProfileRepository, UserCache userCache, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory) {
+	public MixinIntegratedServer(Thread thread, LevelStorage.Session session, SaveProperties saveProperties, ResourcePackManager<ResourcePackProfile> resourcePackManager, Proxy proxy, DataFixer dataFixer, ServerResourceManager serverResourceManager, MinecraftSessionService minecraftSessionService, GameProfileRepository gameProfileRepository, UserCache userCache, WorldGenerationProgressListenerFactory worldGenerationProgressListenerFactory) {
 		super(thread, modifiable, session, saveProperties, resourcePackManager, proxy, dataFixer, serverResourceManager, minecraftSessionService, gameProfileRepository, userCache, worldGenerationProgressListenerFactory);
 	}
 
