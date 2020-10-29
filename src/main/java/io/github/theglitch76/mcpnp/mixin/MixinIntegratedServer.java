@@ -16,7 +16,7 @@ import net.minecraft.server.WorldGenerationProgressListenerFactory;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.UserCache;
-import net.minecraft.util.DynamicRegistryManager;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.SaveProperties;
 import net.minecraft.world.level.LevelInfo;
