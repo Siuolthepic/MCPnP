@@ -17,25 +17,6 @@ jobs:
   - stage: build
     install: chmod +x ./gradlew
     script: "./gradlew build -S -i"
-  - stage: deploy
-    install: chmod +x ./gradlew
-    script: "./gradlew javadocs build bintrayUpload -S -i"
-    deploy:
-      - provider: pages
-        github_token: "$GITHUB_OAUTH_TOKEN"
-        local_dir: build/docs/javadoc
-        keep_history: true
-        skip_cleanup: true
-        target_branch: gh-pages
-        on:
-          branch: master
-      - provider: releases
-        api_key: "$GITHUB_OAUTH_TOKEN"
-        files: build/libs/*
-        skip_cleanup: true
-        on:
-          branch: master
-          tags: true
 
 stages:
 - build
